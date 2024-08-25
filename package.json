@@ -1,0 +1,30 @@
+{
+  "name": "arenaless-bundler",
+  "version": "1.0.0",
+  "description": "Bundler based on rollup for ArenaLess",
+  "main": "index.js",
+  "scripts": {
+    "test": "ts-node test.ts",
+    "build": "tsc index.ts"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@rollup/browser": "^4.21.0",
+    "@swc/wasm-typescript": "^1.7.18",
+    "@types/estree": "^1.0.0",
+    "estree-walker": "^2.0.2",
+    "js-base64": "^3.7.7",
+    "json5": "^2.2.3",
+    "path-browserify": "^1.0.1",
+    "picomatch": "^2.3.1",
+    "smob": "^1.5.0",
+    "terser": "^5.31.6",
+    "typescript": "^5.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "@types/path-browserify": "^1.0.3",
+    "@types/picomatch": "^3.0.1"
+  }
+}
