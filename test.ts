@@ -1,3 +1,4 @@
+// import { build } from "arenaless-bundler";
 import { build } from "./dist/index";
 import * as fs from "fs";
 
