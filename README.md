@@ -3,6 +3,56 @@
 重构版：ArenaLess的打包工具
 Bundler based on rollup for ArenaLess
 
+## 安装
+```bash
+npm install --save arenaless-bundler
+```
+
+## 使用
+这是一个示例使用
+```typescript
+import { build } from "arenaless-bundler";
+import * as fs from "fs";
+
+async function test(){
+    let files_text:Record<string,string>={
+        "index.ts":`import {hello} from "./hello/hi";
+import hellots from "./hello/hi.ts?text";
+import hellob64 from "./hello/hi.ts?base64";
+hello();
+console.log(hellots);
+console.log(hellob64);
+import JSON5 from "npm:json5";
+console.log(JSON5.parse("{a:1}"))
+import foo from "./foo.json";
+console.log(foo)`,
+        "hello/hi.ts":`export function hello():void{
+            console.log("hello");
+        }`,
+        "foo.json":`{"bar":12345}`
+    }
+    // let imagebuf=fs.readFileSync("./image.png");
+    // to uint array
+    // let image=new Uint8Array(imagebuf);
+    let files:Record<string,Uint8Array>={
+        //"image.png": image,
+    };
+    for (let key in files_text) {
+        files[key]=new TextEncoder().encode(files_text[key]);
+    }
+    let res=await build(files,"index.ts","{}",console,"cjs","{}",false);
+    // console.log(res)
+    return res;
+};
+(async ()=>{
+    let start=Date.now();
+    let res=await test();
+    fs.writeFileSync("./test_output.js",res,{encoding:"utf-8"});
+    console.log(`${Date.now()-start}ms`);
+})();
+```
+
+
 ## 有哪些特性？
 ### 1. 网络导入
 如果你用过`deno`，你会发现十分的熟悉。在ArenaLess中，你可以从URL或者`xxx:yyyy@...`中导入模块。

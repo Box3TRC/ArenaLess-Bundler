@@ -1,4 +1,4 @@
-import { build } from "./index";
+import { build } from "./dist/index";
 import * as fs from "fs";
 
 async function test(){
