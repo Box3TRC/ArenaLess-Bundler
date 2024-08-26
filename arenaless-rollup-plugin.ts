@@ -23,7 +23,7 @@ function resolveIdWithSpecifiers(id: string): ResolveIdResult {
     } else if (specifier == "jsr:") {
         return { id: `https://esm.sh/jsr/${content}` };
     } else if (specifier == "http:" || specifier == "https:") {
-        return { id: content };
+        return { id: id };
     }
 }
 function resolveVirtualFS(id: string, importer: string | undefined, modules: Record<string, any>) {
@@ -92,18 +92,13 @@ export function arenaless(config: { modules_raw: Record<string, Uint8Array> }): 
             let b64 = Base64.fromUint8Array(config.modules_raw[key]);
             // b64="<debug removed>"
             modules[key] = {binary:true};
-            modules[`${key}?binary`]=`export default $arenaless_internel_base64ToUint8Array("${b64}");`;
+            modules[`${key}?binary`]=`import {toByteArray as $arenaless_internel_base64ToUint8Array} from "https://esm.sh/base64-js@1.5.1";export default $arenaless_internel_base64ToUint8Array("${b64}");`;
+            modules[`${key}?base64`]=`export default "${b64}";`;
+            if(key.endsWith(".wasm"))modules[`${key}?wasm`]=`import {toByteArray as $arenaless_internel_base64ToUint8Array} from "https://esm.sh/base64-js@1.5.1";let buf=$arenaless_internel_base64ToUint8Array("${b64}");export default async()=>{let module=await WebAssembly.compile(buf);let instance=await WebAssembly.instantiate(module,{});return instance;}`
         }
     }
     return {
         name: "arenaless",
-        intro() {
-            if (!base64flag) {
-                return "";
-            }
-            // base64 to uint array(but without atob)
-            return `function $arenaless_internel_base64ToUint8Array(b){ const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"; let s = b.replace(/[^A-Za-z0-9\+\/]/g,"").split(''), l = s.length, u8 = new Uint8Array(l * 3 / 4 - 4), j = 0, o1, o2, o3, o4; for(let i = 0; i < l;) { o1 = B64.indexOf(s[i++]); o2 = B64.indexOf(s[i++]); o3 = B64.indexOf(s[i++]); o4 = B64.indexOf(s[i++]); u8[j++] = (o1 << 2) | (o2 >> 4); if(o3 !== 64)u8[j++] = ((o2 & 15) << 4) | (o3 >> 2); if(o4 !== 64)u8[j++] = ((o3 & 3) << 6) | o4; } return u8; }`
-        },
         resolveId(id, importer, options) {
             if (hasSpecifiers(id)) {
                 return resolveIdWithSpecifiers(id);
@@ -130,6 +125,7 @@ export function arenaless(config: { modules_raw: Record<string, Uint8Array> }): 
             }
             // url
             if (id.startsWith("http://") || id.startsWith("https://")) {
+                // console.log("loading url",id)
                 let content=alCache.get(id);
                 if(content){
                     return content;
@@ -138,7 +134,7 @@ export function arenaless(config: { modules_raw: Record<string, Uint8Array> }): 
                 alCache.set(id,content);
                 return content;
             }
-        },
+        }
     }
 }
 export function jsonLoader():Plugin{

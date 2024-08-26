@@ -1,0 +1,10 @@
+[package]
+name = "hellowasm"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+default-features = false  # 禁用默认特性，包括 std
+
+[dependencies]
