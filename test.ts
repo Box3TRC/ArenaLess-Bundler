@@ -4,7 +4,11 @@ import * as fs from "fs";
 async function test(){
     let files_text:Record<string,string>={
         "index.ts":`import {hello} from "./hello/hi";
+import hellots from "./hello/hi.ts?text";
+import hellob64 from "./hello/hi.ts?base64";
 hello();
+console.log(hellots);
+console.log(hellob64);
 import JSON5 from "npm:json5";
 console.log(JSON5.parse("{a:1}"))
 import foo from "./foo.json";

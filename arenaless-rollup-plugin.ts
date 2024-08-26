@@ -80,20 +80,18 @@ export const alCache=new Cache();
 
 export function arenaless(config: { modules_raw: Record<string, Uint8Array> }): Plugin {
     let modules: Record<string, string|{binary:boolean}> = {};
-    let base64flag = false;
     for (let key in config.modules_raw) {
         // test if text can be decoded
+        let b64 = Base64.fromUint8Array(config.modules_raw[key]);
+        modules[`${key}?binary`]=`import {toByteArray as $arenaless_internel_base64ToUint8Array} from "https://esm.sh/base64-js@1.5.1";export default $arenaless_internel_base64ToUint8Array("${b64}");`;
+        modules[`${key}?base64`]=`export default "${b64}";`;
         try {
+            
             let text = new TextDecoder("utf-8", { fatal: true }).decode(config.modules_raw[key]);
             modules[key] = text;
+            modules[`${key}?text`]=`export default \`${text}\`;`;
         } catch (e) {
-            // to base64
-            base64flag = true;
-            let b64 = Base64.fromUint8Array(config.modules_raw[key]);
-            // b64="<debug removed>"
             modules[key] = {binary:true};
-            modules[`${key}?binary`]=`import {toByteArray as $arenaless_internel_base64ToUint8Array} from "https://esm.sh/base64-js@1.5.1";export default $arenaless_internel_base64ToUint8Array("${b64}");`;
-            modules[`${key}?base64`]=`export default "${b64}";`;
             if(key.endsWith(".wasm"))modules[`${key}?wasm`]=`import {toByteArray as $arenaless_internel_base64ToUint8Array} from "https://esm.sh/base64-js@1.5.1";let buf=$arenaless_internel_base64ToUint8Array("${b64}");export default async()=>{let module=await WebAssembly.compile(buf);let instance=await WebAssembly.instantiate(module,{});return instance;}`
         }
     }
