@@ -1,4 +1,4 @@
-import { type Plugin, type ResolveIdResult } from "@rollup/browser";
+import { type Plugin, type ResolveIdResult } from "rolldown";
 import * as path from 'path-browserify';
 import { Base64 } from 'js-base64';
 
@@ -55,32 +55,10 @@ function resolveVirtualFS(id: string, importer: string | undefined, modules: Rec
     }
 }
 
-class Cache{
-    cache:Record<string,any>;
-    max:number=64;
-    constructor(){
-        this.cache = {};
-    }
-    get(key:string){
-        return this.cache[key];
-    }
-    set(key:string,value:any){
-        let keys=Object.keys(this.cache);
-        if(keys.length >= this.max){
-            // delete one
-            delete this.cache[keys[0]];
-        }
-        this.cache[key]=value;
-    }
-    clear(){
-        this.cache = {};
-    }
-}
-export const alCache=new Cache();
-
 export function arenaless(config: { modules_raw: Record<string, Uint8Array> }): Plugin {
     let modules: Record<string, string|{binary:boolean}> = {};
     let base64flag = false;
+    let urlCache: Record<string, string> = {};
     for (let key in config.modules_raw) {
         // test if text can be decoded
         try {
@@ -130,16 +108,15 @@ export function arenaless(config: { modules_raw: Record<string, Uint8Array> }): 
             }
             // url
             if (id.startsWith("http://") || id.startsWith("https://")) {
-                let content=alCache.get(id);
-                if(content){
-                    return content;
+                if (urlCache[id]) {
+                    return urlCache[id];
                 }
-                content=await (await fetch(id)).text();
-                alCache.set(id,content);
+                let content=await (await fetch(id)).text();
+                urlCache[id]=content;
                 return content;
             }
         },
-    }
+    }as any
 }
 export function jsonLoader():Plugin{
     return {

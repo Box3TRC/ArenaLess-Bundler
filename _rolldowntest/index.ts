@@ -1,7 +1,6 @@
-import { rollup } from "./rollup-browser";
-import { type Plugin } from "./rollup-browser";
-// import { transformSync } from "./swc-wasm-typescript";
-import ts from "typescript"
+import { rolldown } from "rolldown";
+import { type Plugin } from "rolldown";
+import { transformSync } from "@swc/wasm-typescript";
 import * as JSON5 from "json5";
 import { arenaless, jsonLoader } from "./arenaless-rollup-plugin";
 import alias from "./plugins/alias/src/index"
@@ -10,19 +9,6 @@ let minifyTerser:any;
   minifyTerser=(await import("terser")).minify;
 })();
 
-async function toTypeScriptAPIReadable(tsconfig: any) {
-  let res: ts.CompilerOptions = {};
-  for (let key in tsconfig) {
-    if (
-      !["target", "moduleResolution", "module", "baseUrl", "rootDir"].includes(
-        key,
-      )
-    ) {
-      res[key] = tsconfig[key];
-    }
-  }
-  return res;
-}
 
 export async function build(
   fileList: Record<string, Uint8Array>,
@@ -79,11 +65,7 @@ export async function build(
       throw new Error(`importMap读取出错！${e}`);
     }
   }
-  let finaltsconfig=await toTypeScriptAPIReadable(tsconfig);
-  Object.assign(finaltsconfig, {
-    target: ts.ScriptTarget.ESNext,
-    paths: tsconfig.paths,
-  });
+
   let newfileList: Record<string, Uint8Array> = {};
   // load tsconfig compilerOptions to interface CompilerOptions
   for (let key in fileList) {
@@ -91,7 +73,7 @@ export async function build(
     newfileList[key]=fileList[key];
   }
   // logger.info(`fileList:${JSON.stringify(newfileList)}`);
-  const rolled = await rollup({
+  const rolled = await rolldown({
     input: [entry],
     plugins: [
       alias({
@@ -105,7 +87,7 @@ export async function build(
         name:"swc",
         transform(code, id) {
             if(id.endsWith(".ts")){
-              return ts.transpile(code,finaltsconfig)
+              return transformSync(code)
             }
         },
       },

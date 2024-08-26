@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>arenaless bundler test running</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <script type="module">
+        import "https://esm.sh/fast-text-encoding/text.min.js"
+        import { build } from "./dist/index.js";
+        let files_text = {
+            "index.ts": `import {hello} from "./hello/hi";
+hello();
+import JSON5 from "npm:json5";
+console.log(JSON5.parse("{a:1}"))
+import foo from "./foo.json";
+console.log(foo)`,
+            "hello/hi.ts": `export function hello():void{
+            console.log("hello");
+        }`,
+            "foo.json": `{"bar":12345}`
+        }
+        let files = {};
+        for (let key in files_text) {
+            files[key] = new TextEncoder().encode(files_text[key]);
+        }
+        build(files, "index.ts", "{}", console, "cjs", "{}", false).then((res)=>{
+            console.log(res);
+        })
+    </script>
+</body>
+
+</html>
