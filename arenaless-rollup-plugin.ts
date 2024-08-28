@@ -26,7 +26,7 @@ function resolveIdWithSpecifiers(id: string): ResolveIdResult {
         return { id: id };
     }
 }
-function resolveVirtualFS(id: string, importer: string | undefined, modules: Record<string, any>) {
+function resolveVirtualFS(id: string, importer: string | undefined, modules: Record<string, any>,aliasmode:boolean=false) {
     if (!importer) {
         return `${VFS_PREFIX}${id}`;
     }
@@ -36,7 +36,8 @@ function resolveVirtualFS(id: string, importer: string | undefined, modules: Rec
     if (id.startsWith("./")) {
         id = id.slice(2);
     }
-    let resolved = path.dirname(importerNoPrefix) + "/" + id;
+    let resolved = path.join(path.dirname(importerNoPrefix), id).replace(/\\/g, "/");
+    if(aliasmode)resolved=id;
     if (resolved.startsWith("./")) {
         resolved = resolved.slice(2);
     }
@@ -76,10 +77,12 @@ class Cache{
         this.cache = {};
     }
 }
+
 export const alCache=new Cache();
 
-export function arenaless(config: { modules_raw: Record<string, Uint8Array> }): Plugin {
+export function arenaless(config: { modules_raw: Record<string, Uint8Array>,aliases?: Array<{find:string,replacement:string}> }): Plugin {
     let modules: Record<string, string|{binary:boolean}> = {};
+    let aliases=config.aliases||[];
     for (let key in config.modules_raw) {
         // test if text can be decoded
         let b64 = Base64.fromUint8Array(config.modules_raw[key]);
@@ -109,6 +112,13 @@ export function arenaless(config: { modules_raw: Record<string, Uint8Array> }): 
 
                 }
             }
+            // resolve alias
+            let hasAlias=aliases.find(alias=>id.startsWith(alias.find));
+            if(hasAlias){
+                let replacement=hasAlias.replacement;
+                let newId=id.replace(hasAlias.find,replacement);
+                return resolveVirtualFS(newId, importer, modules,true);
+            }
             return resolveVirtualFS(id, importer, modules);
         }, async load(id) {
             // vfs
@@ -117,7 +127,7 @@ export function arenaless(config: { modules_raw: Record<string, Uint8Array> }): 
                 let content = modules[file];
                 if (typeof content == "string") {
                     return content;
-                }else if(content.binary){
+                }else if(typeof content=="object"&&content.binary){
                     throw Error(`File ${file} is binary, if you need binary data, please import <path>?binary"`);
                 }
             }

@@ -94,11 +94,12 @@ export async function build(
   const rolled = await rollup({
     input: [entry],
     plugins: [
-      alias({
-        entries: aliases,
-      }) as Plugin,
+      // alias({
+      //   entries: aliases,
+      // }) as Plugin,
       arenaless({
-        modules_raw: newfileList
+        modules_raw: newfileList,
+        aliases: aliases,
       })as Plugin,
       jsonLoader()as Plugin,
       {

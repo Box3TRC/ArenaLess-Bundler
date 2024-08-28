@@ -1,18 +1,18 @@
 // import { build } from "arenaless-bundler";
-import { build } from "./dist/index";
+import { build } from "./index";
 import * as fs from "fs";
 
 async function test(){
     let files_text:Record<string,string>={
-        "index.ts":`import {hello} from "./hello/hi";
-import hellots from "./hello/hi.ts?text";
-import hellob64 from "./hello/hi.ts?base64";
+        "hello/index.ts":`import {hello} from "./hi";
+import hellots from "./hi.ts?text";
+import hellob64 from "./hi.ts?base64";
 hello();
 console.log(hellots);
 console.log(hellob64);
 import JSON5 from "npm:json5";
 console.log(JSON5.parse("{a:1}"))
-import foo from "./foo.json";
+import foo from "foo";
 console.log(foo)`,
         "hello/hi.ts":`export function hello():void{
             console.log("hello");
@@ -28,7 +28,37 @@ console.log(foo)`,
     for (let key in files_text) {
         files[key]=new TextEncoder().encode(files_text[key]);
     }
-    let res=await build(files,"index.ts","{}",console,"cjs","{}",false);
+    let res=await build(files,"hello/index.ts",`{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "commonjs",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "experimentalDecorators": true,
+        "moduleResolution": "node",
+        "baseUrl": "./",
+        "rootDir": "./",
+        "outDir": "dist", // do not change this
+        "lib": [],
+        "paths": {
+            "foo": [
+                "./foo.json"
+            ],
+        },
+        
+    },
+    "include": [
+        "./**/*.ts",
+        "./**/*.d.ts",
+        "./types"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}`,console,"cjs","{}",false);
     // console.log(res)
     return res;
 };
