@@ -10,7 +10,7 @@ import hellob64 from "./hi.ts?base64";
 hello();
 console.log(hellots);
 console.log(hellob64);
-import JSON5 from "npm:json5";
+import JSON5 from "json5";
 console.log(JSON5.parse("{a:1}"))
 import foo from "foo";
 console.log(foo)`,
@@ -58,7 +58,9 @@ console.log(foo)`,
         "node_modules",
         "dist"
     ]
-}`,console,"cjs","{}",false);
+}`,console,"cjs",`{
+    "imports":{"json5":"npm:json5"}
+}`,false);
     // console.log(res)
     return res;
 };

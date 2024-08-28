@@ -1,6 +1,6 @@
 {
   "name": "arenaless-bundler",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "Bundler based on rollup for ArenaLess",
   "module": "dist/index.js",
   "main": "dist/index.js",

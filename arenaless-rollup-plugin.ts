@@ -104,7 +104,7 @@ export function arenaless(config: { modules_raw: Record<string, Uint8Array>,alia
             if (hasSpecifiers(id)) {
                 return resolveIdWithSpecifiers(id);
             }
-            if ((id.startsWith("/") || id.startsWith("./") && importer && (importer.startsWith("http://") || importer.startsWith("https://"))) && hasSpecifiers(importer!)) {
+            if ((id.startsWith("/") || id.startsWith("./")) && importer && (importer.startsWith("http://") || importer.startsWith("https://")) && hasSpecifiers(importer!)) {
                 try {
                     new URL(id, importer);
                     return new URL(id, importer).href;
@@ -117,6 +117,10 @@ export function arenaless(config: { modules_raw: Record<string, Uint8Array>,alia
             if(hasAlias){
                 let replacement=hasAlias.replacement;
                 let newId=id.replace(hasAlias.find,replacement);
+                if(hasSpecifiers(newId)){
+                    // console.log(newId)
+                    return resolveIdWithSpecifiers(newId);
+                }
                 return resolveVirtualFS(newId, importer, modules,true);
             }
             return resolveVirtualFS(id, importer, modules);
