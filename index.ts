@@ -4,7 +4,7 @@ import { type Plugin } from "./rollup-browser";
 import ts from "typescript"
 import * as JSON5 from "json5";
 import { arenaless, jsonLoader } from "./arenaless-rollup-plugin";
-import alias from "./plugins/alias/src/index"
+// import alias from "./plugins/alias/src/index"
 let minifyTerser:any;
 (async()=>{
   minifyTerser=(await import("terser")).minify;
