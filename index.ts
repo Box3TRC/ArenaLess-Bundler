@@ -44,9 +44,9 @@ export async function build(
     if (tsconfig.paths) {
       for (let key in tsconfig.paths) {
         // prob suffix
-        if (tsconfig.paths[key][0].startsWith("")) {
-          tsconfig.paths[key][0] = tsconfig.paths[key][0].slice(2);
-        }
+        // if (tsconfig.paths[key][0].startsWith("./")) {
+        //   tsconfig.paths[key][0] = tsconfig.paths[key][0].slice(2);
+        // }
         if (
           !tsconfig.paths[key][0].endsWith(".ts") &&
           !tsconfig.paths[key][0].endsWith(".js")
@@ -57,10 +57,10 @@ export async function build(
             tsconfig.paths[key][0] = `${tsconfig.paths[key][0]}.js`;
           }
         }
-        aliases.push({
-          find: key,
-          replacement: tsconfig.paths[key][0],
-        });
+        // aliases.push({
+        //   find: key,
+        //   replacement: tsconfig.paths[key][0],
+        // });
       }
     }
   }
@@ -70,10 +70,11 @@ export async function build(
       importMapJSON = JSON5.parse(importMap);
       // add to alias
       for(let key in importMapJSON.imports){
-        aliases.push({
-          find: key,
-          replacement: importMapJSON.imports[key],
-        });
+        // aliases.push({
+        //   find: key,
+        //   replacement: importMapJSON.imports[key],
+        // });
+        tsconfig.paths[key]=[importMapJSON.imports[key]];
       }
     } catch (e) {
       throw new Error(`importMap读取出错！${e}`);
@@ -99,7 +100,7 @@ export async function build(
       // }) as Plugin,
       arenaless({
         modules_raw: newfileList,
-        aliases: aliases,
+        tsconfig:finaltsconfig
       })as Plugin,
       jsonLoader()as Plugin,
       {

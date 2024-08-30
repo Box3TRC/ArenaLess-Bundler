@@ -1,5 +1,6 @@
 import { type Plugin, type ResolveIdResult } from "@rollup/browser";
 import * as path from 'path-browserify';
+import AliasesFromTSConfig from "./aliasesFromTSConfig";
 import { Base64 } from 'js-base64';
 
 const VFS_PREFIX = "\0fs:";
@@ -80,9 +81,8 @@ class Cache{
 
 export const alCache=new Cache();
 
-export function arenaless(config: { modules_raw: Record<string, Uint8Array>,aliases?: Array<{find:string,replacement:string}> }): Plugin {
+export function arenaless(config: { modules_raw: Record<string, Uint8Array>,tsconfig?: any }): Plugin {
     let modules: Record<string, string|{binary:boolean}> = {};
-    let aliases=config.aliases||[];
     for (let key in config.modules_raw) {
         // test if text can be decoded
         let b64 = Base64.fromUint8Array(config.modules_raw[key]);
@@ -98,6 +98,7 @@ export function arenaless(config: { modules_raw: Record<string, Uint8Array>,alia
             if(key.endsWith(".wasm"))modules[`${key}?wasm`]=`import {toByteArray as $arenaless_internel_base64ToUint8Array} from "https://esm.sh/base64-js@1.5.1";let buf=$arenaless_internel_base64ToUint8Array("${b64}");export default async()=>{let module=await WebAssembly.compile(buf);let instance=await WebAssembly.instantiate(module,{});return instance;}`
         }
     }
+    let aliasResolver=new AliasesFromTSConfig(JSON.stringify({compilerOptions:config.tsconfig}));
     return {
         name: "arenaless",
         resolveId(id, importer, options) {
@@ -113,12 +114,10 @@ export function arenaless(config: { modules_raw: Record<string, Uint8Array>,alia
                 }
             }
             // resolve alias
-            let hasAlias=aliases.find(alias=>id.startsWith(alias.find));
-            if(hasAlias){
-                let replacement=hasAlias.replacement;
-                let newId=id.replace(hasAlias.find,replacement);
+            if(aliasResolver.hasAlias(id)){
+                let newId=aliasResolver.apply(id);
+                // console.log(`alias ${id} -> ${newId}`)
                 if(hasSpecifiers(newId)){
-                    // console.log(newId)
                     return resolveIdWithSpecifiers(newId);
                 }
                 return resolveVirtualFS(newId, importer, modules,true);

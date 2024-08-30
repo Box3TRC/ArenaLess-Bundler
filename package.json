@@ -1,12 +1,13 @@
 {
   "name": "arenaless-bundler",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Bundler based on rollup for ArenaLess",
   "module": "dist/index.js",
   "main": "dist/index.js",
   "scripts": {
     "test": "ts-node test.ts",
     "build": "esbuild index.ts --bundle --outdir=dist --platform=browser --format=esm --minify",
+    "build_node": "esbuild index.ts --bundle --outfile=dist/index_node.js --platform=node --format=cjs --minify",
     "prepublish": "npm run build"
   },
   "author": "tobylai",
