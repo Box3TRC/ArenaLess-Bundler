@@ -41,6 +41,9 @@ export async function build(
     } catch (e) {
       throw new Error(`tsconfig读取出错！${e}`);
     }
+    if(!tsconfig.paths){
+      tsconfig.paths={};
+    }
     if (tsconfig.paths) {
       for (let key in tsconfig.paths) {
         // prob suffix
@@ -106,7 +109,7 @@ export async function build(
       {
         name:"swc",
         transform(code, id) {
-            if(id.endsWith(".ts")){
+            if(id.endsWith(".ts")||id.endsWith(".jsx")||id.endsWith(".tsx")){
               return ts.transpile(code,finaltsconfig)
             }
         },

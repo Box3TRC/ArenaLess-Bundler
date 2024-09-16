@@ -27,7 +27,7 @@ function resolveIdWithSpecifiers(id: string): ResolveIdResult {
         return { id: id };
     }
 }
-function resolveVirtualFS(id: string, importer: string | undefined, modules: Record<string, any>,aliasmode:boolean=false) {
+function resolveVirtualFS(id: string, importer: string | undefined, modules: Record<string, any>, aliasmode: boolean = false) {
     if (!importer) {
         return `${VFS_PREFIX}${id}`;
     }
@@ -38,11 +38,11 @@ function resolveVirtualFS(id: string, importer: string | undefined, modules: Rec
         id = id.slice(2);
     }
     let resolved = path.join(path.dirname(importerNoPrefix), id).replace(/\\/g, "/");
-    if(aliasmode)resolved=id;
+    if (aliasmode) resolved = id;
     if (resolved.startsWith("./")) {
         resolved = resolved.slice(2);
     }
-    if (resolved.endsWith(".js") || resolved.endsWith(".ts")) {
+    if (resolved.endsWith(".js") || resolved.endsWith(".ts") || resolved.endsWith(".jsx") || resolved.endsWith(".tsx")) {
         return VFS_PREFIX + resolved;
     } else if (modules[resolved]) {
         return VFS_PREFIX + resolved;
@@ -52,53 +52,57 @@ function resolveVirtualFS(id: string, importer: string | undefined, modules: Rec
     }
     else if (modules[resolved + ".js"]) {
         return VFS_PREFIX + resolved + ".js";
+    } else if (modules[resolved + ".jsx"]) {
+        return VFS_PREFIX + resolved + ".jsx";
+    }else if(modules[resolved + ".tsx"]){
+        return VFS_PREFIX + resolved + ".tsx";
     } else {
         throw Error(`File ${resolved} not found`);
     }
 }
 
-class Cache{
-    cache:Record<string,any>;
-    max:number=64;
-    constructor(){
+class Cache {
+    cache: Record<string, any>;
+    max: number = 64;
+    constructor() {
         this.cache = {};
     }
-    get(key:string){
+    get(key: string) {
         return this.cache[key];
     }
-    set(key:string,value:any){
-        let keys=Object.keys(this.cache);
-        if(keys.length >= this.max){
+    set(key: string, value: any) {
+        let keys = Object.keys(this.cache);
+        if (keys.length >= this.max) {
             // delete one
             delete this.cache[keys[0]];
         }
-        this.cache[key]=value;
+        this.cache[key] = value;
     }
-    clear(){
+    clear() {
         this.cache = {};
     }
 }
 
-export const alCache=new Cache();
+export const alCache = new Cache();
 
-export function arenaless(config: { modules_raw: Record<string, Uint8Array>,tsconfig?: any }): Plugin {
-    let modules: Record<string, string|{binary:boolean}> = {};
+export function arenaless(config: { modules_raw: Record<string, Uint8Array>, tsconfig?: any }): Plugin {
+    let modules: Record<string, string | { binary: boolean }> = {};
     for (let key in config.modules_raw) {
         // test if text can be decoded
         let b64 = Base64.fromUint8Array(config.modules_raw[key]);
-        modules[`${key}?binary`]=`import {toByteArray as $arenaless_internel_base64ToUint8Array} from "https://esm.sh/base64-js@1.5.1";export default $arenaless_internel_base64ToUint8Array("${b64}");`;
-        modules[`${key}?base64`]=`export default "${b64}";`;
+        modules[`${key}?binary`] = `import {toByteArray as $arenaless_internel_base64ToUint8Array} from "https://esm.sh/base64-js@1.5.1";export default $arenaless_internel_base64ToUint8Array("${b64}");`;
+        modules[`${key}?base64`] = `export default "${b64}";`;
         try {
-            
+
             let text = new TextDecoder("utf-8", { fatal: true }).decode(config.modules_raw[key]);
             modules[key] = text;
-            modules[`${key}?text`]=`export default \`${text}\`;`;
+            modules[`${key}?text`] = `export default \`${text}\`;`;
         } catch (e) {
-            modules[key] = {binary:true};
-            if(key.endsWith(".wasm"))modules[`${key}?wasm`]=`import {toByteArray as $arenaless_internel_base64ToUint8Array} from "https://esm.sh/base64-js@1.5.1";let buf=$arenaless_internel_base64ToUint8Array("${b64}");export default async()=>{let module=await WebAssembly.compile(buf);let instance=await WebAssembly.instantiate(module,{});return instance;}`
+            modules[key] = { binary: true };
+            if (key.endsWith(".wasm")) modules[`${key}?wasm`] = `import {toByteArray as $arenaless_internel_base64ToUint8Array} from "https://esm.sh/base64-js@1.5.1";let buf=$arenaless_internel_base64ToUint8Array("${b64}");export default async()=>{let module=await WebAssembly.compile(buf);let instance=await WebAssembly.instantiate(module,{});return instance;}`
         }
     }
-    let aliasResolver=new AliasesFromTSConfig(JSON.stringify({compilerOptions:config.tsconfig}));
+    let aliasResolver = new AliasesFromTSConfig(JSON.stringify({ compilerOptions: config.tsconfig }));
     return {
         name: "arenaless",
         resolveId(id, importer, options) {
@@ -114,13 +118,13 @@ export function arenaless(config: { modules_raw: Record<string, Uint8Array>,tsco
                 }
             }
             // resolve alias
-            if(aliasResolver.hasAlias(id)){
-                let newId=aliasResolver.apply(id);
+            if (aliasResolver.hasAlias(id)) {
+                let newId = aliasResolver.apply(id);
                 // console.log(`alias ${id} -> ${newId}`)
-                if(hasSpecifiers(newId)){
+                if (hasSpecifiers(newId)) {
                     return resolveIdWithSpecifiers(newId);
                 }
-                return resolveVirtualFS(newId, importer, modules,true);
+                return resolveVirtualFS(newId, importer, modules, true);
             }
             return resolveVirtualFS(id, importer, modules);
         }, async load(id) {
@@ -130,29 +134,29 @@ export function arenaless(config: { modules_raw: Record<string, Uint8Array>,tsco
                 let content = modules[file];
                 if (typeof content == "string") {
                     return content;
-                }else if(typeof content=="object"&&content.binary){
+                } else if (typeof content == "object" && content.binary) {
                     throw Error(`File ${file} is binary, if you need binary data, please import <path>?binary"`);
                 }
             }
             // url
             if (id.startsWith("http://") || id.startsWith("https://")) {
                 // console.log("loading url",id)
-                let content=alCache.get(id);
-                if(content){
+                let content = alCache.get(id);
+                if (content) {
                     return content;
                 }
-                content=await (await fetch(id)).text();
-                alCache.set(id,content);
+                content = await (await fetch(id)).text();
+                alCache.set(id, content);
                 return content;
             }
         }
     }
 }
-export function jsonLoader():Plugin{
+export function jsonLoader(): Plugin {
     return {
         name: "jsonLoader",
         transform(code, id) {
-            if(id.endsWith(".json")){
+            if (id.endsWith(".json")) {
                 return `export default ${JSON.stringify(JSON.parse(code))};`
             }
         },
