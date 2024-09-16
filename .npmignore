@@ -1,4 +1,4 @@
 # keep package.json & dist/ ,drop other files
 *
 !package.json
-!dist/
+!dist/*

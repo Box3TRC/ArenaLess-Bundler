@@ -1,5 +1,7 @@
+// @ts-ignore
 // import { build } from "arenaless-bundler";
-import { build } from "./index";
+// @ts-ignore
+import { build } from "./dist/index";
 import * as fs from "fs";
 
 async function test() {
@@ -60,8 +62,8 @@ aui.mount(<App />, ui);
         "node_modules",
         "dist"
     ]
-}`, console, "cjs", `{
-    "imports":{"json5":"npm:json5"}
+}`, console, "es", `{
+    "imports":{}
 }`, false);
     // console.log(res)
     return res;

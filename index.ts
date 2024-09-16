@@ -52,12 +52,18 @@ export async function build(
         // }
         if (
           !tsconfig.paths[key][0].endsWith(".ts") &&
+          !tsconfig.paths[key][0].endsWith(".tsx") &&
+          !tsconfig.paths[key][0].endsWith(".jsx") &&
           !tsconfig.paths[key][0].endsWith(".js")
         ) {
           if (fileList[`${tsconfig.paths[key][0]}.ts`]) {
             tsconfig.paths[key][0] = `${tsconfig.paths[key][0]}.ts`;
           } else if (fileList[`${tsconfig.paths[key][0]}.js`]) {
             tsconfig.paths[key][0] = `${tsconfig.paths[key][0]}.js`;
+          } else if(fileList[`${tsconfig.paths[key][0]}.jsx`]){
+            tsconfig.paths[key][0] = `${tsconfig.paths[key][0]}.jsx`;
+          }else if(fileList[`${tsconfig.paths[key][0]}.tsx`]){
+            tsconfig.paths[key][0] = `${tsconfig.paths[key][0]}.tsx`;
           }
         }
         // aliases.push({
@@ -101,19 +107,19 @@ export async function build(
       // alias({
       //   entries: aliases,
       // }) as Plugin,
-      arenaless({
-        modules_raw: newfileList,
-        tsconfig:finaltsconfig
-      })as Plugin,
-      jsonLoader()as Plugin,
       {
-        name:"swc",
+        name:"tsc",
         transform(code, id) {
             if(id.endsWith(".ts")||id.endsWith(".jsx")||id.endsWith(".tsx")){
               return ts.transpile(code,finaltsconfig)
             }
         },
       },
+      arenaless({
+        modules_raw: newfileList,
+        tsconfig:finaltsconfig
+      })as Plugin,
+      jsonLoader()as Plugin,
       {
         name:"terser-minify",
         async renderChunk(code,chunk){
