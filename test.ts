@@ -7,6 +7,7 @@ async function test() {
         "hello/index.ts": `import {hello} from "./hi";
 import hellots from "@/hello/hi.ts?text";
 import hellob64 from "./hi.ts?base64";
+import {Text} from "dao3-areact/component";
 hello();
 console.log(hellots);
 console.log(hellob64);
@@ -17,7 +18,8 @@ console.log(foo)`,
         "hello/hi.ts": `export function hello():void{
             console.log("hello");
         }`,
-        "foo.json": `{"bar":12345}`
+        "foo.json": `{"bar":12345}`,
+        "importMap.arenaless.jsonc":`{"imports":{"dao3-areact":"npm:dao3-areact"}}`
     }
     // let imagebuf=fs.readFileSync("./image.png");
     // to uint array

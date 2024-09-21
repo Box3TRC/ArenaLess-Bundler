@@ -147,4 +147,4 @@ export default AliasesFromTSConfig;
 //         "dist"
 //     ]
 // }`);
-// console.log(a.apply("@"));
+// console.log(a.apply("dao3-areact/component"));

@@ -4,7 +4,7 @@ import { type Plugin } from "./rollup-browser";
 import ts from "typescript"
 import * as JSON5 from "json5";
 import { arenaless, jsonLoader } from "./arenaless-rollup-plugin";
-// import alias from "./plugins/alias/src/index"
+import alias from "./plugins/alias/src/index"
 let minifyTerser:any;
 (async()=>{
   minifyTerser=(await import("terser")).minify;
@@ -79,11 +79,11 @@ export async function build(
       importMapJSON = JSON5.parse(importMap);
       // add to alias
       for(let key in importMapJSON.imports){
-        // aliases.push({
-        //   find: key,
-        //   replacement: importMapJSON.imports[key],
-        // });
-        tsconfig.paths[key]=[importMapJSON.imports[key]];
+        aliases.push({
+          find: key,
+          replacement: importMapJSON.imports[key],
+        });
+        // tsconfig.paths[key]=[importMapJSON.imports[key]];
       }
     } catch (e) {
       throw new Error(`importMap读取出错！${e}`);
@@ -104,9 +104,9 @@ export async function build(
   const rolled = await rollup({
     input: [entry],
     plugins: [
-      // alias({
-      //   entries: aliases,
-      // }) as Plugin,
+      alias({
+        entries: aliases,
+      }) as Plugin,
       {
         name:"tsc",
         transform(code, id) {
