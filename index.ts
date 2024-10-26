@@ -1,6 +1,8 @@
 import { rollup } from "./rollup-browser";
 import { type Plugin } from "./rollup-browser";
 // import { transformSync } from "./swc-wasm-typescript";
+// @ts-ignore
+// import coffee from "./coffeescript";
 import ts from "typescript"
 import * as JSON5 from "json5";
 import { arenaless, jsonLoader } from "./arenaless-rollup-plugin";
@@ -32,6 +34,7 @@ export async function build(
   format: "es" | "cjs" = "cjs",
   importMap?: string | undefined,
   developmentMode: boolean = false,
+  dir_prefix_for_aliases: string = "",
 ) {
   // read paths
   let aliases:any[] = [], tsconfig:any={};
@@ -64,7 +67,13 @@ export async function build(
             tsconfig.paths[key][0] = `${tsconfig.paths[key][0]}.jsx`;
           }else if(fileList[`${tsconfig.paths[key][0]}.tsx`]){
             tsconfig.paths[key][0] = `${tsconfig.paths[key][0]}.tsx`;
-          }
+          } 
+          tsconfig.paths[key][0]=dir_prefix_for_aliases+tsconfig.paths[key][0];
+          // else if(fileList[`${tsconfig.paths[key][0]}.coffee`]){
+          //   tsconfig.paths[key][0] = `${tsconfig.paths[key][0]}.coffee`;
+          // } else if(fileList[`${tsconfig.paths[key][0]}.cjsx`]){
+          //   tsconfig.paths[key][0] = `${tsconfig.paths[key][0]}.cjsx`;
+          // }
         }
         // aliases.push({
         //   find: key,
@@ -108,11 +117,14 @@ export async function build(
         entries: aliases,
       }) as Plugin,
       {
-        name:"tsc",
+        name:"transpile",
         transform(code, id) {
             if(id.endsWith(".ts")||id.endsWith(".jsx")||id.endsWith(".tsx")){
               return ts.transpile(code,finaltsconfig)
             }
+            // if(id.endsWith(".coffee")||id.endsWith(".cjsx")){
+            //   return coffee.compile(code,{bare:false});
+            // }
         },
       },
       arenaless({

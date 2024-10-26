@@ -1,0 +1,1 @@
+"use strict";(function(){var n,t,e,u;u=function(n){return n*n},n=[1,2,3,4,5],t={root:Math.sqrt,square:u,cube:function(n){return n*u(n)}},"undefined"!=typeof elvis&&null!==elvis&&alert("I knew it!"),function(){var u,r,i;for(i=[],u=0,r=n.length;u<r;u++)e=n[u],i.push(t.cube(e))}()}).call(void 0);
