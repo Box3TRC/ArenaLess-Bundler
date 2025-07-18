@@ -1,6 +1,6 @@
 {
   "name": "arenaless-bundler",
-  "version": "1.1.5",
+  "version": "1.1.7",
   "description": "Bundler based on rollup for ArenaLess",
   "module": "dist/index.js",
   "main": "dist/index.js",
@@ -9,12 +9,13 @@
     "build": "node esbuild.mjs",
     "build_node": "esbuild index.ts --bundle --outfile=dist/index_node.js --platform=node --format=cjs --minify",
     "prepublishOnly": "npm run build",
-    "buildrun": "npm run build&&esbuild test-coffee.ts --bundle --platform=browser --format=esm --outfile=tmp.js && node tmp.js"
+    "buildrun": "npm run build&&esbuild test.ts --bundle --platform=browser --format=iife --outfile=tmp.js && node tmp.js"
   },
   "author": "tobylai",
   "license": "MIT",
   "devDependencies": {
     "@rollup/browser": "^4.45.1",
+    "@swc/wasm-web": "^1.13.0",
     "@types/coffeescript": "^2.5.7",
     "@types/estree": "^1.0.0",
     "@types/node": "^22.5.0",
@@ -29,7 +30,8 @@
     "picomatch": "^2.3.1",
     "smob": "^1.5.0",
     "terser": "^5.31.6",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "@swc/wasm-typescript": "^1.13.0"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"

@@ -1,6 +1,6 @@
 // import { build } from "arenaless-bundler";
 import { build } from "./index";
-import * as fs from "fs";
+// import * as fs from "fs";
 
 async function test() {
     let files_text: Record<string, string> = {
@@ -72,7 +72,7 @@ console.log(foo)`,
     for (let i = 1; i < 10 + 1; i++) {
         let start = Date.now();
         let res = await test();
-        fs.writeFileSync("./test_output.js", res, { encoding: "utf-8" });
+        // fs.writeFileSync("./test_output.js", res, { encoding: "utf-8" });
         console.log(`${i}. ${Date.now() - start}ms`);
     }
 })();
