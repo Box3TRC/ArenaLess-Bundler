@@ -89,7 +89,6 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
 .cache/
@@ -151,3 +150,7 @@ pnpm-lock.yaml
 *.key
 *.crt
 *.csr
+
+/dist
+
+test_output.js

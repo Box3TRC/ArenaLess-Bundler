@@ -1,8 +1,5 @@
 import { rollup } from "./rollup-browser";
 import { type Plugin } from "./rollup-browser";
-// import { transformSync } from "./swc-wasm-typescript";
-// @ts-ignore
-// import coffee from "./coffeescript";
 import ts from "typescript"
 import * as JSON5 from "json5";
 import { arenaless, jsonLoader } from "./arenaless-rollup-plugin";

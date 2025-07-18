@@ -1,6 +1,6 @@
 {
   "name": "@rollup/browser",
-  "version": "4.20.0",
+  "version": "4.45.1",
   "description": "Next-generation ES module bundler browser build",
   "main": "dist/rollup.browser.js",
   "module": "dist/es/rollup.browser.js",
@@ -20,7 +20,7 @@
   },
   "homepage": "https://rollupjs.org/",
   "dependencies": {
-    "@types/estree": "1.0.5"
+    "@types/estree": "1.0.8"
   },
   "files": [
     "dist/**/*.wasm",
@@ -32,8 +32,8 @@
   "exports": {
     ".": {
       "types": "./dist/rollup.browser.d.ts",
-      "require": "./dist/rollup.browser.js",
-      "import": "./dist/es/rollup.browser.js"
+      "import": "./dist/es/rollup.browser.js",
+      "require": "./dist/rollup.browser.js"
     },
     "./dist/*": "./dist/*"
   }
